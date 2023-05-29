@@ -4,20 +4,38 @@ import { colors } from "../../Globals/Colors";
 
 import { Caption, IconButton, Text } from "react-native-paper";
 import { Divider } from "react-native-elements";
-
+import {db,auth} from '../../screens/auth/firebase'
+import {ref,child,update} from 'firebase/database'
 type c = {
   time: Date;
-  name: string;
+  Firstname: string;
   studentNo: string;
   phoneNo: string;
   guardianPhoneNo: string;
+  status:string;
+  key:string;
   onPress():void
 };
 const RequestCard = (props: c) => {
+//   const editprofile=(key)=>{
+  
+//     const medicoRef=ref(db, "/MedicoClient/" )
+//     const medicoChild = child(medicoRef,key)
+// update(medicoChild,{Lastname:lastName,Firstname:firstName,
+//   })
+//     // .then(()=>medicoRef.once('value'))
+//     // onValue(medicoChild)
+//     // .then(snapshot=>snapshot.val())
+//     // .catch(error => ({
+//     //   errorCode: error.code,
+//     //   errorMessage: error.message
+//     // })); 
+//     // navigation.navigate('Profile')
+//   }
   return (
     <View style={styles.con}>
       <View style={styles.date}>
-        <Caption style={styles.dt} numberOfLines={1} ellipsizeMode="tail">
+        {/* <Caption style={styles.dt} numberOfLines={1} ellipsizeMode="tail">
           {props.time.toLocaleTimeString("en-SA", {
             year: "numeric",
             month: "short",
@@ -26,30 +44,31 @@ const RequestCard = (props: c) => {
             minute: "numeric",
             hour12: true,
           })}
-        </Caption>
+        </Caption> */}
       </View>
-      <Text variant="titleMedium">{props.name}</Text>
+      <Text variant="titleMedium">{props.Firstname}</Text>
       <Divider orientation="horizontal" width={1} />
       <Row>
-        <Text variant="labelSmall">student Number</Text>
-        <Caption>{props.studentNo}</Caption>
+        <Text variant="titleMedium">Address</Text>
+        <Caption numberOfLines={5}>{props.studentNo}</Caption>
       </Row>
       <Row>
-        <Text variant="labelSmall">Phone Number</Text>
-        <Caption>+{props.phoneNo}</Caption>
+        <Text variant="titleMedium">Accessibility</Text>
+        <Caption>{props.phoneNo}</Caption>
       </Row>
       <Row>
-        <Text variant="labelSmall">Guardian #no</Text>
-        <Caption>
-          +{props.guardianPhoneNo}
+        <Text variant="labelSmall">Status</Text>
+        <Caption> 
+          {props.status}
         </Caption>
       </Row>
+   
       <View style={styles.icon}>
         <IconButton
           icon="chevron-right"
           iconColor={"#000"}
           size={20}
-          onPress={props.onPress}
+          onPress={()=>props.onPress()}
           style={styles.ic}
         />
       </View>

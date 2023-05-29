@@ -34,7 +34,7 @@ const Chat = () => {
       GiftedChat.append(previousMessages, messages)
     );
   }, []);
-  return (
+  return ( 
     <MainView>
       <Header title={name} is_on_chat={true} />
       <GiftedChat

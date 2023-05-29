@@ -1,11 +1,14 @@
 import { Platform, StyleSheet, View } from "react-native";
-import React from "react";
+import React,{useEffect,useState} from "react";
 import { colors, rgba } from "../../../Globals/Colors";
 import Scroller from "../../../Globals/Scroller";
 import { Avatar, Button, Paragraph, Text, TextInput } from "react-native-paper";
 import { MainStyle } from "../../../styles/MainStyle";
 import MainView from "../../../Globals/MainView";
-
+import { db,auth } from "../../auth/firebase";
+import { signOut } from "firebase/auth";
+import { ref, onValue } from "firebase/database";
+import { useNavigation } from "@react-navigation/native";
 const isIos = Platform.OS === "ios";
 
 const Settings = () => {
@@ -29,6 +32,20 @@ export const Column = (props: col) => {
 };
 
 const ProfileWrap = () => {
+  const user = auth.currentUser?.uid
+  const [Firstname, setFirname] = useState("");
+  const [Lastname, setLastname] = useState("");
+  const [email, setEmail] = useState("");
+  const [uid, setUid] = useState("");
+  useEffect(() => {
+    const StudentRef = ref(db, "/MedicoClient/" + user);
+    onValue(StudentRef, snap => {
+      setFirname(snap.val() && snap.val().Firstname);
+      setLastname(snap.val() && snap.val().Lastname);
+      setEmail(snap.val() && snap.val().email);
+      setUid(snap.val() && snap.val().uid);
+    });
+  }, []);
   return (
     <View style={styles.con}>
       <Avatar.Text
@@ -38,33 +55,54 @@ const ProfileWrap = () => {
         labelStyle={styles.label}
         style={styles.avatar}
       />
-      <Paragraph>Daniel Mawasha</Paragraph>
+      <Paragraph>{Firstname} {Lastname}</Paragraph>
       <Text variant="bodySmall" style={styles.email}>
-        dkmawasha@gmail.com
+       {email}
       </Text>
     </View>
   );
 };
 
 const TextInputsWrapper = () => {
+  const navigation = useNavigation();
+  const onLogoutUser=()=>{
+   
+    signOut(auth);
+    navigation.navigate('login');
+    
+  }
+  const user = auth.currentUser?.uid
+  const [Firstname, setFirname] = useState("");
+  const [Lastname, setLastname] = useState("");
+  const [email, setEmail] = useState("");
+  const [uid, setUid] = useState("");
+  useEffect(() => {
+    const StudentRef = ref(db, "/MedicoClient/" + user);
+    onValue(StudentRef, snap => {
+      setFirname(snap.val() && snap.val().Firstname);
+      setLastname(snap.val() && snap.val().Lastname);
+      setEmail(snap.val() && snap.val().email);
+      setUid(snap.val() && snap.val().uid);
+    });
+  }, []);
   return (
     <View style={styles.inputWrapper}>
       <TextInput
-        placeholder={"email"}
+        placeholder={email}
         inputMode="email"
         mode="outlined"
         outlineStyle={styles.outlined}
         style={styles.input}
       />
       <TextInput
-        placeholder={"firstName"}
+        placeholder={Firstname}
         inputMode="text"
         mode="outlined"
         outlineStyle={styles.outlined}
         style={styles.input}
       />
       <TextInput
-        placeholder={"lastName"}
+        placeholder={Lastname}
         inputMode="text"
         mode="outlined"
         outlineStyle={styles.outlined}
@@ -85,6 +123,7 @@ const TextInputsWrapper = () => {
         contentStyle={[styles.outlined]}
         labelStyle={MainStyle.label}
         style={[styles.outlined]}
+        onPress={onLogoutUser}
       >
         logout
       </Button>

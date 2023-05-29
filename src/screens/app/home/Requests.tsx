@@ -1,5 +1,5 @@
 import { Dimensions, FlatList, StyleSheet, View } from "react-native";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import MainView from "../../../Globals/MainView";
 import RequestCard, { Row } from "../../../components/app/RequestCard";
 import {
@@ -16,6 +16,9 @@ import { RequestData } from "../../../data/RequestData";
 import { Divider } from "react-native-elements";
 import { colors } from "../../../Globals/Colors";
 import { MainStyle } from "../../../styles/MainStyle";
+import { db,auth } from "../../auth/firebase";
+import {ref,onValue} from 'firebase/database'
+
 
 const height = Dimensions.get("screen").height;
 const width = Dimensions.get("screen").width;
@@ -32,37 +35,82 @@ const Requests = () => {
   let items: object;
 
   const [status, setStatus] = React.useState("Pending");
+  const [StudHistory, setStudHistory] = useState([])
+  
+  useEffect(() => {
+   const StudentRef= ref(db,'/MedicoRequest')
+   onValue(StudentRef, snap => {
 
+        const StudHistory = []
+        snap.forEach(action => {
+            const key = action.key
+            const data = action.val()
+            StudHistory.push({
+                key:key,
+                Firstname:data.Firstname,address:data.fullAddress,
+                uid:data.uid,status:data.Status,
+                accessibility:data.accessibility,
+                safety:data.safety,additional:data.addons,
+              user:data.user
+            })
+            
+          //   const text='Pending'
+          //   if(text){
+          //    const newData = StudHistory.filter(function(item){
+          //        const itemData = item.Status ? item.Status
+          //        :'';
+          //        const textData = text;
+          //        return itemData.indexOf( textData)>-1;
+ 
+          //    })
+          //    setStudHistory(newData)
+            
+          //  }
+           setStudHistory(StudHistory)
+
+        })
+    })
+ 
+}, [])
+const editprofile=()=>{
+  
+  const medicoRef=ref(db, "/MedicoClient/" )
+  const medicoChild = child(medicoRef,uid)
+update(medicoChild,{status:status})
+  
+}
   return (
     <MainView>
       <Provider>
         <View style={styles.con}>
           <FlatList
-            data={RequestData}
-            keyExtractor={(item) => item.id.toString()}
+            data={StudHistory}
+            keyExtractor={(item) => item.key}
             renderItem={(item) => {
               items = item.item;
               const {
-                name,
+                Firstname,
                 phone,
                 date,
                 guardian,
                 address,
                 course,
                 Faculty,
-                yearOfStudy,
-                studentNo,
+                yearOfStudy,uid,
+                studentNo,accessibility,status,key
               } = item.item;
 
-              const { fullnames, phoneNo } = guardian;
+              // const {  phoneNo } = guardian;
 
               return (
                 <RequestCard
-                  guardianPhoneNo={phoneNo}
-                  name={name}
-                  phoneNo={phone}
-                  studentNo={studentNo}
-                  time={date}
+                  // guardianPhoneNo={phoneNo}
+                  Firstname={Firstname}
+                  phoneNo={accessibility}
+                  studentNo={address}
+                  // time={Status}
+                  key={key}
+                  status={status}
                   onPress={handleModal}
                 />
               );
@@ -75,6 +123,7 @@ const Requests = () => {
           isVisible={isVisible}
           onDismiss={handleModalClose}
           status={status}
+          // uid={uid}
           setStatus={(event) => setStatus(event)}
         />
       </Provider>
@@ -86,13 +135,14 @@ type m = {
   isVisible: boolean;
   onDismiss(): void;
   status: string;
+  uid:string;
   setStatus(event: any): void;
 };
 const ModalWrapper = (props: m) => {
   return (
     <Modal visible={props.isVisible} onDismiss={props.onDismiss}>
       <View style={styles.modal}>
-        <Text variant="titleSmall" style={styles.title}>
+        {/* <Text variant="titleSmall" style={styles.title}>
           Request Information
         </Text>
         <Divider orientation="horizontal" />
@@ -113,9 +163,9 @@ const ModalWrapper = (props: m) => {
           <Caption numberOfLines={2} ellipsizeMode="tail" style={styles.dc}>
             locked-gate
           </Caption>
-        </View>
+        </View> */}
         <Divider orientation="horizontal" />
-        <Text variant="titleSmall" style={styles.title}>
+        {/* <Text variant="titleSmall" style={styles.title}>
           Student Details
         </Text>
         <Divider orientation="horizontal" />
@@ -136,7 +186,7 @@ const ModalWrapper = (props: m) => {
           <Caption numberOfLines={2} ellipsizeMode="tail" style={styles.dc}>
             Hallen Zeeliesky
           </Caption>
-        </Row>
+        </Row> */}
         <Divider orientation="horizontal" />
         <Text variant="titleSmall" style={styles.title}>
           Update Status

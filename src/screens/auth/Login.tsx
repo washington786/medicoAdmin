@@ -17,7 +17,11 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import SafeView from "../../Globals/SafeView";
 import MainView from "../../Globals/MainView";
-
+import { auth,db } from "./firebase";
+import { Formik } from "formik";
+import * as yup from "yup";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { signInWithEmailAndPassword } from "firebase/auth";
 const Login = () => {
   const navigation = useNavigation();
   const onHandleRegister = () => {
@@ -31,6 +35,7 @@ const Login = () => {
   };
   let title: string = "Welcome Back";
   let sub: string = "please enter your credentials to sign in to your account.";
+  
   return (
     <SafeView>
       <MainView>
@@ -64,10 +69,52 @@ export const AuthTop = (props: t) => {
 };
 const InputWrapper = () => {
   const navigation = useNavigation();
-  const Submit = () => {
-    navigation.navigate("app");
-  };
+  // const Submit = () => {
+  //   navigation.navigate("app");
+  // };
+  const ReviewSchem = yup.object({
+    email: yup.string().required().min(6),
+    password: yup.string().required().min(6),
+  });
+  const Submit = async (data) => {
+ 
+    try {
+        const { email, password } = data
+      await 
+            signInWithEmailAndPassword(
+                auth,email.trim().toLowerCase(), password)
+                .then(async res => {
+  
+                try {
+  
+                    const jsonValue = JSON.stringify(res.user)
+                    await AsyncStorage.setItem("MedicoClient", res.user.uid)
+                    navigation.navigate("app");
+                } catch (e) {
+                    // saving error
+                    console.log('no data')
+                }
+            })
+  
+    }
+    catch (error) {
+  
+        Alert.alert(
+            error.name,
+            error.message
+        )
+    }
+  }
   return (
+    <Formik
+    initialValues={{ email: "", password: "" }}
+    validationSchema={ReviewSchem}
+    onSubmit={(values, action) => {
+      action.resetForm();
+      Submit(values);
+    }}
+  >
+    {(props) => (
     <View style={styles.inputsContainer}>
       <TextInput
         placeholder="email address"
@@ -75,7 +122,13 @@ const InputWrapper = () => {
         mode="outlined"
         label={"email address"}
         style={styles.input}
+        onChangeText={props.handleChange("email")}
+              value={props.values.email}
+              onBlur={props.handleBlur("email")}
       />
+       <Text style={{ color: "red", marginTop: -15 }}>
+              {props.touched.email && props.errors.email}
+            </Text>
 
       <TextInput
         placeholder="password"
@@ -84,17 +137,24 @@ const InputWrapper = () => {
         label={"password"}
         secureTextEntry={true}
         style={styles.input}
+        onChangeText={props.handleChange("password")}
+        value={props.values.password}
+        onBlur={props.handleBlur("password")}
       />
-
+ <Text style={{ color: "red", marginTop: -15 }}>
+              {props.touched.password && props.errors.password}
+            </Text>
       <Button
         mode="contained-tonal"
         style={styles.button}
         labelStyle={styles.label}
-        onPress={Submit}
+        onPress={props.handleSubmit}
       >
         sign in
       </Button>
     </View>
+    )}
+    </Formik>
   );
 };
 
